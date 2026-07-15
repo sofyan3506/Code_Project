@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="top-bar">
+    <div class="top-bar__left">
+      <!-- Greeting & DateTime -->
+      <div id="datetime" class="datetime"></div>
+      <div id="greeting" class="greeting"></div>
+    </div>
+    <div class="top-bar__right">
+      <!-- Theme toggle -->
+      <button id="themeToggle" class="btn-icon" title="Toggle light / dark mode" aria-label="Toggle theme">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== NAME MODAL (shown on first visit) ===== -->
+  <div id="nameModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
+    <div class="modal">
+      <h2 id="nameModalTitle">Welcome! 👋</h2>
+      <p>What should I call you?</p>
+      <input id="nameInput" class="input" type="text" placeholder="Your name" maxlength="40" />
+      <button id="nameSaveBtn" class="btn btn--primary">Let's go</button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="dashboard">
+
+    <!-- ── FOCUS TIMER ── -->
+    <section class="card timer-card" aria-labelledby="timerHeading">
+      <h2 id="timerHeading" class="card__title">Focus Timer</h2>
+
+      <div class="timer__display" id="timerDisplay" aria-live="polite">25:00</div>
+
+      <div class="timer__controls">
+        <button id="timerStart" class="btn btn--primary">Start</button>
+        <button id="timerStop"  class="btn btn--secondary">Stop</button>
+        <button id="timerReset" class="btn btn--ghost">Reset</button>
+      </div>
+
+      <!-- Challenge: custom Pomodoro duration -->
+      <div class="timer__settings">
+        <label for="timerDuration" class="label">Minutes:</label>
+        <input id="timerDuration" class="input input--sm" type="number" min="1" max="120" value="25" />
+        <button id="timerSetDuration" class="btn btn--ghost btn--sm">Set</button>
+      </div>
+    </section>
+
+    <!-- ── TO-DO LIST ── -->
+    <section class="card todo-card" aria-labelledby="todoHeading">
+      <h2 id="todoHeading" class="card__title">To-Do List</h2>
+
+      <form id="todoForm" class="todo__form">
+        <input id="todoInput" class="input" type="text" placeholder="Add a new task…" maxlength="200" required />
+        <button type="submit" class="btn btn--primary">Add</button>
+      </form>
+
+      <ul id="todoList" class="todo__list" aria-label="Task list"></ul>
+
+      <p id="todoEmpty" class="todo__empty hidden">No tasks yet. Add one above!</p>
+    </section>
+
+    <!-- ── QUICK LINKS ── -->
+    <section class="card links-card" aria-labelledby="linksHeading">
+      <h2 id="linksHeading" class="card__title">Quick Links</h2>
+
+      <form id="linkForm" class="links__form">
+        <input id="linkName" class="input" type="text"  placeholder="Label (e.g. GitHub)" maxlength="30" required />
+        <input id="linkUrl"  class="input" type="url"   placeholder="https://…" required />
+        <button type="submit" class="btn btn--primary">Add</button>
+      </form>
+
+      <div id="linksList" class="links__grid" aria-label="Quick links"></div>
+
+      <p id="linksEmpty" class="links__empty hidden">No links yet. Add one above!</p>
+    </section>
+
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
