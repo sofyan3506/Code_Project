@@ -11,7 +11,7 @@ const KEY_NAME   = 'dashboard_name';
 const KEY_THEME  = 'dashboard_theme';
 const KEY_TODOS  = 'dashboard_todos';
 const KEY_LINKS  = 'dashboard_links';
-const KEY_TIMER  = 'dashboard_timer_minutes';
+const KEY_TIMER  = 'dashboard_timer_seconds';
 
 /* ============================================================
    HELPERS
@@ -57,19 +57,19 @@ function getGreetingWord(hour) {
 }
 
 function updateDatetime() {
-  const now      = new Date();
-  const hour     = now.getHours();
-  const name     = load(KEY_NAME, '');
+  const now     = new Date();
+  const hour    = now.getHours();
+  const name    = load(KEY_NAME, '');
 
-  const dateStr  = now.toLocaleDateString(undefined, {
+  const dateStr = now.toLocaleDateString(undefined, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
-  const timeStr  = now.toLocaleTimeString(undefined, {
+  const timeStr = now.toLocaleTimeString(undefined, {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   });
 
   datetimeEl.textContent = `${timeStr}  ·  ${dateStr}`;
-  greetingEl.textContent  = name
+  greetingEl.textContent = name
     ? `${getGreetingWord(hour)}, ${name}! 👋`
     : `${getGreetingWord(hour)}! 👋`;
 }
@@ -147,25 +147,39 @@ themeToggle.addEventListener('click', () => {
    FOCUS TIMER (Pomodoro)
    ============================================================ */
 
-const timerDisplay     = document.getElementById('timerDisplay');
-const timerStartBtn    = document.getElementById('timerStart');
-const timerStopBtn     = document.getElementById('timerStop');
-const timerResetBtn    = document.getElementById('timerReset');
-const timerDurationIn  = document.getElementById('timerDuration');
-const timerSetDurBtn   = document.getElementById('timerSetDuration');
+const timerDisplay   = document.getElementById('timerDisplay');
+const timerStartBtn  = document.getElementById('timerStart');
+const timerStopBtn   = document.getElementById('timerStop');
+const timerResetBtn  = document.getElementById('timerReset');
+const timerHourIn    = document.getElementById('timerHour');
+const timerMinutesIn = document.getElementById('timerMinutes');
+const timerSecsIn    = document.getElementById('timerSecs');
+const timerSetDurBtn = document.getElementById('timerSetDuration');
 
-let timerMinutes    = load(KEY_TIMER, 25);
-let timerSeconds    = timerMinutes * 60;
-let timerInterval   = null;
-let timerRunning    = false;
+// Total seconds for the current session duration
+let timerTotalSeconds     = load(KEY_TIMER, 25 * 60);
+// Remaining seconds (counts down)
+let timerRemainingSeconds = timerTotalSeconds;
+let timerInterval         = null;
+let timerRunning          = false;
 
-// Keep the input in sync with the loaded value
-timerDurationIn.value = timerMinutes;
+/** Sync the three inputs to reflect a given total-seconds value. */
+function updateTimerInputs(total) {
+  const t = total !== undefined ? total : timerTotalSeconds;
+  timerHourIn.value    = Math.floor(t / 3600);
+  timerMinutesIn.value = Math.floor((t % 3600) / 60);
+  timerSecsIn.value    = t % 60;
+}
 
+/** Render remaining time to the display element. */
 function renderTimer() {
-  const m = Math.floor(timerSeconds / 60);
-  const s = timerSeconds % 60;
-  timerDisplay.textContent = `${pad(m)}:${pad(s)}`;
+  const t = Math.max(0, timerRemainingSeconds);
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = t % 60;
+  timerDisplay.textContent = h > 0
+    ? `${pad(h)}:${pad(m)}:${pad(s)}`
+    : `${pad(m)}:${pad(s)}`;
 }
 
 function setTimerState(state) {
@@ -175,26 +189,27 @@ function setTimerState(state) {
   if (state === 'finished') timerDisplay.classList.add('finished');
 }
 
+// Initialise
+updateTimerInputs();
 renderTimer();
 setTimerState('idle');
 
 function startTimer() {
-  if (timerRunning || timerSeconds <= 0) return;
+  if (timerRunning || timerRemainingSeconds <= 0) return;
   timerRunning = true;
   setTimerState('running');
   timerInterval = setInterval(() => {
-    timerSeconds--;
+    timerRemainingSeconds--;
     renderTimer();
-    if (timerSeconds <= 0) {
+    if (timerRemainingSeconds <= 0) {
       clearInterval(timerInterval);
       timerRunning = false;
       setTimerState('finished');
-      timerDisplay.textContent = '00:00';
       // Browser notification if permission granted
       if (Notification.permission === 'granted') {
         new Notification('Focus session complete! 🎉', {
           body: 'Time to take a break.',
-          icon: '', // could add a favicon path here
+          icon: '',
         });
       }
     }
@@ -210,29 +225,41 @@ function stopTimer() {
 
 function resetTimer() {
   stopTimer();
-  timerSeconds = timerMinutes * 60;
+  timerRemainingSeconds = timerTotalSeconds;
   renderTimer();
   setTimerState('idle');
 }
 
 function setCustomDuration() {
-  const val = parseInt(timerDurationIn.value, 10);
-  if (isNaN(val) || val < 1 || val > 120) {
-    timerDurationIn.focus();
-    timerDurationIn.select();
+  const h = parseInt(timerHourIn.value,    10) || 0;
+  const m = parseInt(timerMinutesIn.value, 10) || 0;
+  const s = parseInt(timerSecsIn.value,    10) || 0;
+
+  if (h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) {
+    alert('Masukkan nilai valid (Jam: 0-23, Menit/Detik: 0-59)');
     return;
   }
-  timerMinutes  = val;
-  timerSeconds  = timerMinutes * 60;
-  save(KEY_TIMER, timerMinutes);
+
+  const total = h * 3600 + m * 60 + s;
+  if (total === 0) {
+    alert('Total waktu harus lebih dari 0.');
+    return;
+  }
+
+  timerTotalSeconds = total;
+  save(KEY_TIMER, timerTotalSeconds);
   resetTimer();
+  updateTimerInputs();
 }
 
 timerStartBtn.addEventListener('click', startTimer);
 timerStopBtn.addEventListener ('click', stopTimer);
 timerResetBtn.addEventListener('click', resetTimer);
 timerSetDurBtn.addEventListener('click', setCustomDuration);
-timerDurationIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') setCustomDuration(); });
+
+[timerHourIn, timerMinutesIn, timerSecsIn].forEach((input) => {
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') setCustomDuration(); });
+});
 
 // Request notification permission once
 if ('Notification' in window && Notification.permission === 'default') {
@@ -364,11 +391,10 @@ function startEditTodo(id, liEl, spanEl) {
   saveBtn.addEventListener('click', confirmEdit);
   editInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter')  confirmEdit();
-    if (e.key === 'Escape') renderTodos();   // cancel
+    if (e.key === 'Escape') renderTodos(); // cancel
   });
 
   actions.after(saveBtn);
-  actions.style.display = 'none';
 }
 
 todoForm.addEventListener('submit', (e) => {

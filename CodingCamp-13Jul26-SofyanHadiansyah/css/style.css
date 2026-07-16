@@ -201,8 +201,26 @@ body {
 .timer__settings {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.timer__settings .label {
+  font-size: .75rem;
+  color: var(--text-muted);
+  margin-right: 0;
+}
+
+.timer__settings .input--sm {
+  width: 48px;
+  text-align: center;
+}
+/*Version desktop*/
+@media (min-width: 480px) {
+  .timer__settings {
+    gap: 4px 8px;
+  }
 }
 
 /* ============================================================

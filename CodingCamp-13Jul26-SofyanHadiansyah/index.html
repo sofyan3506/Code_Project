@@ -48,10 +48,17 @@
         <button id="timerReset" class="btn btn--ghost">Reset</button>
       </div>
 
-      <!-- Challenge: custom Pomodoro duration -->
+      <!-- Custom duration: Hours / Minutes / Seconds -->
       <div class="timer__settings">
-        <label for="timerDuration" class="label">Minutes:</label>
-        <input id="timerDuration" class="input input--sm" type="number" min="1" max="120" value="25" />
+        <label for="timerHour" class="label">Hour</label>
+        <input id="timerHour" class="input input--sm" type="number" min="0" max="23" value="0" />
+
+        <label for="timerMinutes" class="label">Minutes:</label>
+        <input id="timerMinutes" class="input input--sm" type="number" min="0" max="59" value="25" />
+
+        <label for="timerSecs" class="label">Seconds</label>
+        <input id="timerSecs" class="input input--sm" type="number" min="0" max="59" value="0" />
+
         <button id="timerSetDuration" class="btn btn--ghost btn--sm">Set</button>
       </div>
     </section>
